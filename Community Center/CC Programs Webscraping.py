@@ -6,21 +6,14 @@ Copied text will then be saved into a json file you name
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 import time
 
-def scroll_down_webpage(driver):
-    """Scrolls to the bottom of the page to load all dynamic content."""
-    last_height = driver.execute_script("return document.body.scrollHeight")
-    while True:
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(2)  # Wait for new content to load
-        new_height = driver.execute_script("return document.body.scrollHeight")
-        if new_height == last_height:
-            break
-        last_height = new_height
+"""
+Opens a webpage and scrolls all the way to the bottom
 
-def main(url):
+This function does also return the text from the webpage
+"""
+def scroll_down_webpage(url):
     # Set Chrome options (not headless so the browser stays visible)
     options = Options()
     options.add_experimental_option("detach", True)  # Keep browser open after script ends
@@ -36,21 +29,29 @@ def main(url):
         driver.get(url)
         time.sleep(2)  # Give initial load time
 
-        scroll_down_webpage(driver)
+        # scroll_down_webpage(driver)
+
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(2)  # Wait for new content to load
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
 
         print("\nExtracted text:\n")
         print(text)
 
-        input("\nPress Enter to close the browser and exit...")  # Keeps browser open until user confirms
+        # input("\nPress Enter to close the browser and exit...")  # Keeps browser open until user confirms
 
     finally:
         return url
         driver.quit()
 
 """
------------------------------------------------------------
+Returns text from a webpage
 """
-
 def extract_full_text(url):
     # Set up Chrome in headless mode
     options = Options()
@@ -70,15 +71,21 @@ def extract_full_text(url):
         text = driver.find_element("tag name", "body").text
         return text
     finally:
-        # driver.quit()
+        driver.quit()
         pass
 
 
 
 if __name__ == "__main__":
-    url = input("Enter the URL: ")
-    text = extract_full_text(url)
-    main(url)
+    # url = input("Enter the URL: ")
 
-    print("\nExtracted text:\n")
+    # Full list of community center programs
+    # url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&viewMode=list"
+
+    # Partial list of community center programs
+    url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&center_ids=2&center_ids=129&center_ids=4&center_ids=9&center_ids=158&center_ids=81&viewMode=list"
+    text = extract_full_text(url)
+    scroll_down_webpage(url)
+
+    print("\nHere's your text you bastard\n")
     print(text)
