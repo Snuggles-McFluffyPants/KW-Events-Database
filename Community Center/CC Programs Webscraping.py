@@ -7,6 +7,7 @@ Copied text will then be saved into a json file you name
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
+import json
 
 """
 Opens a webpage and scrolls all the way to the bottom
@@ -86,6 +87,14 @@ if __name__ == "__main__":
     url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&center_ids=2&center_ids=129&center_ids=4&center_ids=9&center_ids=158&center_ids=81&viewMode=list"
     text = extract_full_text(url)
     scroll_down_webpage(url)
+
+    # file_name = input("Enter json filename: ")
+    file_name = "Kitchener_CC_Programs"
+
+    with open(file_name,'w') as write_file:
+        json.dump(text, write_file,indent=4)
+
+    json_str = json.dumps(text, indent=4)
 
     print("\nHere's your text you bastard\n")
     print(text)
