@@ -6,6 +6,7 @@ Copied text will then be saved into a json file you name
 
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
 import time
 import json
 
@@ -14,6 +15,9 @@ Opens a webpage and scrolls all the way to the bottom
 
 This function does also return the text from the webpage
 """
+
+# Opens a webpage and scolls all the way to the bottom
+#   For websites that don't allow webscraping
 def scroll_down_webpage(url):
     # Set Chrome options (not headless so the browser stays visible)
     options = Options()
@@ -41,60 +45,62 @@ def scroll_down_webpage(url):
                 break
             last_height = new_height
 
-        print("\nExtracted text:\n")
-        print(text)
-
         # input("\nPress Enter to close the browser and exit...")  # Keeps browser open until user confirms
 
     finally:
-        return url
+        # return text
         driver.quit()
 
-"""
-Returns text from a webpage
-"""
-def extract_full_text(url):
-    # Set up Chrome in headless mode
+# Extracts and returns text from a webpage
+#   For websites that allow webscraping
+def extract_full_text_with_scroll(url):
+    # Set Chrome options (non-headless so content loads fully)
     options = Options()
-    options.headless = True
+    options.add_experimental_option("detach", True)
 
-    # Start the driver
     driver = webdriver.Chrome(options=options)
 
     try:
-        # Load the page
         driver.get(url)
+        time.sleep(3)  # Initial load
 
-        # Wait for JavaScript to load (increase if necessary)
-        time.sleep(5)
+        # Scroll down until you can't anymore
+        SCROLL_PAUSE_TIME = 2
+        last_height = driver.execute_script("return document.body.scrollHeight")
 
-        # Extract visible text
-        text = driver.find_element("tag name", "body").text
-        return text
+        while True:
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(SCROLL_PAUSE_TIME)
+
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            if new_height == last_height:
+                break
+            last_height = new_height
+
+        time.sleep(3)  # Wait to ensure all content is loaded
+
+        # Now grab the text
+        full_text = driver.find_element(By.TAG_NAME, "body").text
+        return full_text
+
     finally:
         driver.quit()
-        pass
 
-
-
-if __name__ == "__main__":
-    # url = input("Enter the URL: ")
-
-    # Full list of community center programs
-    # url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&viewMode=list"
-
-    # Partial list of community center programs
-    url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&center_ids=2&center_ids=129&center_ids=4&center_ids=9&center_ids=158&center_ids=81&viewMode=list"
-    text = extract_full_text(url)
-    scroll_down_webpage(url)
-
-    # file_name = input("Enter json filename: ")
-    file_name = "Kitchener_CC_Programs"
-
-    with open(file_name,'w') as write_file:
-        json.dump(text, write_file,indent=4)
+#Specify a filename
+def text_to_json(filename, text):
+    # Write to a json file
+    with open(file_name, 'w') as write_file:
+        json.dump(text, write_file, indent=4)
 
     json_str = json.dumps(text, indent=4)
 
-    print("\nHere's your text you bastard\n")
-    print(text)
+def text_to_txt(filename, text):
+    with open(filename, "w") as f:
+        f.write(text)
+
+
+if __name__ == "__main__":
+    url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&viewMode=list"
+
+    full_text = extract_full_text_with_scroll(url)
+    text_to_txt("CCPrograms_w_extract_full_scroll.txt", full_text)

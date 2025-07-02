@@ -30,11 +30,18 @@ def check_scraping_permission(url):
     else:
         return False, f"Scraping for '{path_to_check}' is disallowed by robots.txt."
 
-# Example usage:
-website_url = "https://www.google.com"  # Replace with the target website URL
-allowed, message = check_scraping_permission(website_url)
-print(message)
+# # Example usage:
+# website_url = "https://www.google.com"  # Replace with the target website URL
+# allowed, message = check_scraping_permission(website_url)
+# print(message)
+#
+# website_url_2 = "https://www.amazon.com"
+# allowed_2, message_2 = check_scraping_permission(website_url_2)
+# print(message_2)
 
-website_url_2 = "https://www.amazon.com"
-allowed_2, message_2 = check_scraping_permission(website_url_2)
-print(message_2)
+if __name__ == "__main__":
+    website_url = input("Enter website url to check for scraping permission:\n")
+    allowed, message = check_scraping_permission(website_url)
+
+    print(f"Webscraping permissions for {website_url}")
+    print(message)
