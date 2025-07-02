@@ -89,7 +89,7 @@ def extract_full_text_with_scroll(url):
 #Specify a filename
 def text_to_json(filename, text):
     # Write to a json file
-    with open(file_name, 'w') as write_file:
+    with open(filename, 'w') as write_file:
         json.dump(text, write_file, indent=4)
 
     json_str = json.dumps(text, indent=4)
@@ -103,4 +103,4 @@ if __name__ == "__main__":
     url = "https://anc.ca.apm.activecommunities.com/activekitchener/activity/search?onlineSiteId=0&locale=en-US&activity_select_param=2&viewMode=list"
 
     full_text = extract_full_text_with_scroll(url)
-    text_to_txt("CCPrograms_w_extract_full_scroll.txt", full_text)
+    text_to_json("Kitchener_CC_Programs", full_text)
