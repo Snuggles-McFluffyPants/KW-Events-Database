@@ -1,85 +1,65 @@
 """
-Parse all the text into something easier to navigate
+Take text from community center websites from json file and put it into a Panda Dataframe
 """
 
 import json
-import re
+import pandas as pd
 
-# Opening JSON file
-file_name = "Kitchener_CC_Programs"
 
-# Function to insert character to a particular point in a string
-def insert_chars(string, index, char):
-    return string[:index] + char + string[index:]
+delimeters = ["Full", "View sub-activities", "View fee details"]
 
-# Open the nested list with a string and get a list from it
-def json_to_list(filename):
+# A function specifically for parsing all the text from Kitchener Community center website returning a nested list
+# largest nested list is of all programs with lists of containing program attributes
+def parse_text(raw_string):
+    # print(raw_string,"\n\n_-_-_-_\n\n")
+
+    raw_data_list = raw_string.split("\n")
+
+    program_list_1 = []
+    program = []
+    next_program = []
+
+    for item in raw_data_list:
+        # if "#" in row, add this and the last item to the next program, then with the other stuff append program_list_1
+        if "#" in item:
+            next_program.append(program[-1])
+            next_program.append(item)
+            program = program [0:-1]
+
+            program_list_1.append(program)
+            program = next_program
+            next_program = []
+            # print(program_list_1[-1])
+        else:
+            program.append(item)
+
+    program_list_1.append(program)
+
+    program_list_2 = []
+    for item in program_list_1:
+        if len(item) > 8:
+            for line in item:
+                print(line)
+                pass
+            print("\n")
+        else:
+            program_list_2.append(item)
+
+    print("Amount of programs = ",len(program_list_1))
+
+
+
+
+if __name__ == "__main__":
+
+    file_name = "Kitchener_CC_Programs"
+
     f = open(file_name, )
 
     # returns JSON object
-    raw_data = json.load(f)
+    raw_string = json.load(f)
 
-    """ 
-    Processing the raw data 
-    """
-    # Inserting line spaces between event endings
-    raw_data = "\n".join(raw_data)
-    raw_data = raw_data.replace("View Registration Info","View Registration Info\n")
-    raw_data = raw_data.replace("View fee details","View fee details\n")
-    raw_data = raw_data.replace("\nFree\n","\nFree\n\n")
-    raw_data = raw_data.replace("\nIn progress\n","\n\nIn progress\n")
-    raw_data = raw_data.replace("\nFull\n","\n\nFull\n")
+    program_list = parse_text(raw_string)
 
 
-
-    # Dealing with cases which finish with event costs
-    cost_occurances = []
-    for m in re.finditer('\$', raw_data):
-        x = m.start()
-        cost_occurances.append(x)
-
-    cost_occurances.reverse()
-
-    for i in cost_occurances:
-        x = raw_data.find("\n", i)
-        raw_data = insert_chars(raw_data, x, "\n")
-
-    # Seperate events with only 2 new lines
-    raw_data = raw_data.replace("\n\n\n","\n\n")
-    raw_data = raw_data.replace("\n\n\n","\n\n")
-
-    # Remove white space at the end of raw_data
-    raw_data.rstrip()
-    # print(raw_data)
-
-    # divide everything into lists
-    event_list = raw_data.split("\n\n")
-    # print(type(raw_data))
-
-    event_list2 = []
-    for item in event_list:
-        i = item.split("\n")
-        # print(i)
-        if i[0] != "Full":
-                if i[0] != "In progress":
-                    if i[0] != "Starting soon":
-                        if "space(s) left" not in i[0]:
-                            i.insert(0, "All good")
-        # Remove list items that are too short
-        new_list = [x for x in i if len(x) >= 3]
-
-        # Add to the end of a list if the list is too short
-        if len(new_list) < 7:
-            new_list.append("")
-
-        event_list2.append(new_list)
-        if len(new_list) != 7:
-            print("\n".join(new_list))
-
-    return event_list2
-
-if __name__ == "__main__":
-    events = json_to_list("Weekend_Events.json")
-    print(events)
-    for i in events:
-        print(len(i))
+    # print("Skip to main content\nEnglish\nSign In |Create an Account\nHome\nRegister for Activities\nFacilities\nActivity Calendars\nMemberships\nMy Cart\nhome>\nactivity search\nActivity search\nSearch by keyword OR by number\nSearch\nWhen\nWhere\nWho\nActivities\nOpen spots\nIn progress / Future\nFound 2064 matching result(s)\nSort by:\nDate range\nMap view\nFull\nKnitting (In stitches)\n#160347/55 yrs +/Openings 0\nBreithaupt Centre\nSeptember 5, 2024 to August 28, 2025\nThu 1:00 PM - 3:00 PM\nFree\nIn progress\nEuchre\n#160345/18 yrs +/Openings 23\nBreithaupt Centre\nSeptember 6, 2024 to August 29, 2025\nFri 12:45 PM - 3:45 PM\nFree\nEnroll Now\nIn progress")
